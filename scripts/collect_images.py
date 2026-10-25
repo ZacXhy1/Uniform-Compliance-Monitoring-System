@@ -1,22 +1,31 @@
 import cv2
 import pathlib
 
-PERSON = "p01"   # change for each student so you can split by person later
+PERSON = "p01"   # change for each student
 
 out = pathlib.Path("dataset/raw")
 out.mkdir(parents=True, exist_ok=True)
-n = len(list(out.glob(f"{PERSON}_*.jpg")))
+
+def next_index(tag):
+    return len(list(out.glob(f"{PERSON}_{tag}_*.jpg")))
+
+counts = {"polo": next_index("polo"), "civ": next_index("civ"), "neg": next_index("neg")}
+keys = {ord("p"): "polo", ord("c"): "civ", ord("n"): "neg"}
 
 cap = cv2.VideoCapture(0)
 while True:
     ok, frame = cap.read()
     if not ok:
         break
-    cv2.imshow("SPACE = save, Q = quit", frame)
+    view = frame.copy()
+    msg = f"{PERSON}  P=polo({counts['polo']})  C=civilian({counts['civ']})  N=hard negative({counts['neg']})  Q=quit"
+    cv2.putText(view, msg, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 2)
+    cv2.imshow("collect", view)
     k = cv2.waitKey(1) & 0xFF
-    if k == ord(" "):
-        cv2.imwrite(str(out / f"{PERSON}_{n:04d}.jpg"), frame)
-        n += 1
+    if k in keys:
+        tag = keys[k]
+        cv2.imwrite(str(out / f"{PERSON}_{tag}_{counts[tag]:04d}.jpg"), frame)
+        counts[tag] += 1
     elif k == ord("q"):
         break
 
