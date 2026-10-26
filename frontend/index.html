@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniform Compliance (test page)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-6">
+<div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
+  <div class="md:col-span-2">
+    <img id="feed" class="w-full rounded-lg bg-black aspect-video object-contain" alt="camera">
+    <div class="mt-4 flex items-center gap-4">
+      <button id="btn" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 font-semibold">Check uniform</button>
+      <span id="state" class="text-slate-300">connecting…</span>
+    </div>
+    <div id="banner" class="mt-4 rounded-lg p-6 text-3xl font-bold text-center bg-slate-700">Waiting</div>
+  </div>
+  <div>
+    <h2 class="font-semibold mb-2">Recent results</h2>
+    <ul id="log" class="space-y-2 text-sm"></ul>
+  </div>
+</div>
+<script>
+// Change API to "http://<server-ip>:8000" if you open this file from elsewhere.
+const API = location.origin.startsWith("http") ? "" : "http://localhost:8000";
+const WS = (API ? API.replace("http", "ws") : (location.protocol === "https:" ? "wss://" : "ws://") + location.host) + "/ws";
+const COLORS = {"COMPLIANT": "bg-green-600", "NON-COMPLIANT": "bg-red-600", "NO RESULT - RETRY": "bg-amber-500"};
+const $ = id => document.getElementById(id);
+$("feed").src = API + "/video_feed";
+
+function addLog(e, top) {
+  const li = document.createElement("li");
+  li.className = "flex justify-between rounded p-2 " + COLORS[e.result];
+  li.innerHTML = `<span>${e.result}</span><span>${e.time.slice(11)} · ${e.seconds}s</span>`;
+  top ? $("log").prepend(li) : $("log").append(li);
+}
+fetch(API + "/api/logs?limit=10").then(r => r.json()).then(l => l.forEach(e => addLog(e, false)));
+
+$("btn").onclick = () => fetch(API + "/trigger", {method: "POST"});
+
+function connect() {
+  const ws = new WebSocket(WS);
+  ws.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if (m.type === "state") {
+      $("state").textContent = m.state;
+      $("btn").disabled = m.state !== "idle";
+      $("btn").classList.toggle("opacity-50", m.state !== "idle");
+    } else if (m.type === "result") {
+      $("banner").textContent = m.result;
+      $("banner").className = "mt-4 rounded-lg p-6 text-3xl font-bold text-center " + COLORS[m.result];
+      addLog(m, true);
+    }
+  };
+  ws.onclose = () => { $("state").textContent = "disconnected, retrying…"; setTimeout(connect, 2000); };
+}
+connect();
+</script>
+</body></html>

@@ -15,3 +15,25 @@ pip install -r requirements.txt
 
 ## Notes
 - Never commit `.env`, the `dataset/` photos (students are minors) or `.pt` model files.
+
+## Run the system (backend + dashboard)
+```bash
+pip install -r requirements.txt
+uvicorn backend.main:app --host 0.0.0.0 --port 8000
+```
+Open http://localhost:8000 and click **Check uniform**.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /video_feed` | annotated MJPEG stream, use as `<img src>` |
+| `POST /trigger` | start one check (later: RFID tap calls this) |
+| `GET /api/status`, `GET /api/logs` | current state, recent results |
+| `WS /ws` | live `state` and `result` messages |
+
+Optional: set `SUPABASE_URL`/`SUPABASE_KEY` in `.env` and create the table:
+```sql
+create table compliance_logs (
+  id bigint generated always as identity primary key,
+  created_at timestamp, result text, snapshot text, capture_to_result_s real);
+```
+Set `ESP32_URL` to have the server call `GET /result?status=compliant|noncompliant|retry` on the ESP32.
