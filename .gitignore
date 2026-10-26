@@ -3,3 +3,5 @@ venv/
 dataset/
 __pycache__/
 *.pt
+runs/
+captures/
