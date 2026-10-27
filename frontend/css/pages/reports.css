@@ -1,0 +1,401 @@
+/* ==========================================================================
+   Reports — page-specific styles
+   Owner: Paul (Phase 6)
+   Import global.css / components.css first — only add overrides here that
+   are truly specific to this page.
+   ========================================================================== */
+
+/* --- Toolbar --- */
+.reports-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.reports-filter-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.reports-toolbar .select {
+  min-width: 180px;
+}
+
+.reports-export {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.print-only { display: none; }
+
+/* --- Stat cards (reuses .stats-grid, same pattern as Violations) --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* --- Chart + summary row ---
+   align-items: start so the shorter card never stretches to match the
+   taller one (same lesson as Dashboard/Monitoring — see
+   PROJECT_BRIEF.md Section 13). */
+/* 2 x 2 grid:  Compliance Overview | Summary Report
+                Detections by Status | Detections by Date
+   Cards in the same row share a height. */
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.reports-chart-card h2,
+.reports-summary-card h2 {
+  margin-bottom: var(--space-1);
+}
+
+#reports-overview-subtitle {
+  margin-bottom: var(--space-4);
+}
+
+/* --- Compliance donut chart ---
+   Same CSS conic-gradient technique as Dashboard's donut, not a charting
+   library — see PROJECT_BRIEF.md Section 25. Colors are set inline by
+   reports.js since they depend on the currently filtered data. */
+.reports-chart-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.reports-donut {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.reports-donut-center {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.reports-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 160px;
+}
+
+.reports-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.reports-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.reports-legend-dot--success { background: var(--color-success); }
+.reports-legend-dot--danger { background: var(--color-danger); }
+.reports-legend-dot--warning { background: var(--color-warning); }
+
+.reports-legend-count {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+/* --- Summary report card --- */
+.reports-summary-card p {
+  color: var(--color-text);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.reports-insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.reports-insights li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reports-insights li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.reports-insights li span:first-child {
+  color: var(--color-text-muted);
+}
+
+.reports-insights li span:last-child {
+  font-weight: 600;
+}
+
+/* --- Detections by Status (vertical bar chart) --- */
+.reports-bar-card h2 {
+  margin-bottom: var(--space-1);
+}
+
+.reports-bar-chart {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: var(--space-4);
+  height: 220px;
+}
+
+.reports-bar-col {
+  flex: 1;
+  min-width: 0;
+  max-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.reports-bar-track {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reports-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.reports-bar--success { background: var(--color-success); }
+.reports-bar--danger { background: var(--color-danger); }
+.reports-bar--warning { background: var(--color-warning); }
+
+.reports-bar-value {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.reports-bar-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* --- Detections by Date (stacked trend bars) ---
+   Same row/track structure as Violations' by-date bar, extended to three
+   stacked segments (compliant / violation / pending) instead of one. */
+.reports-trend-card h2 {
+  margin-bottom: var(--space-1);
+}
+
+.reports-trend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+}
+
+.reports-trend-row:last-child {
+  border-bottom: none;
+}
+
+.reports-trend-label {
+  width: 140px;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.reports-trend-bar-track {
+  flex: 1;
+  display: flex;
+  background: var(--color-bg);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.reports-trend-bar-segment--success { background: var(--color-success); }
+.reports-trend-bar-segment--danger { background: var(--color-danger); }
+.reports-trend-bar-segment--warning { background: var(--color-warning); }
+
+.reports-trend-count {
+  width: 48px;
+  text-align: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .reports-trend-label {
+    width: 96px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reports-toolbar { flex-wrap: wrap; }
+  .reports-export { margin-left: 0; width: 100%; }
+  .reports-export .btn { flex: 1; }
+}
+
+/* ==========================================================================
+   Fit-to-one-screen layout (desktop)
+   On a window at least 1280 x 700 the whole page is sized to the viewport so
+   nothing needs scrolling: toolbar, KPI row, then the 2 x 2 grid whose two
+   rows split whatever height is left. Each card is a size container, so the
+   donut and the bar chart size themselves from their card's height (cqh).
+   Smaller windows use the normal scrolling layout above.
+   ========================================================================== */
+@supports (container-type: size) {
+  @media screen and (min-width: 1280px) and (min-height: 700px) {
+    .reports-fit {
+      height: calc(100vh - var(--header-height));
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      row-gap: var(--space-3);
+      padding-bottom: var(--space-4);
+    }
+
+    .reports-fit > .reports-toolbar { margin-bottom: 0; }
+    .reports-fit .reports-export .btn { padding: var(--space-2) var(--space-4); }
+    .reports-fit > .stats-grid { margin-bottom: 0; gap: var(--space-3); }
+    .reports-fit .stats-grid .stat-card { padding: var(--space-3) var(--space-4); }
+    .reports-fit .stat-card-value { font-size: var(--text-xl); }
+
+    .reports-fit > .reports-grid {
+      min-height: 0;
+      margin-bottom: 0;
+      gap: var(--space-3);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .reports-fit .reports-grid > .card {
+      container-type: size;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .reports-fit .reports-grid h2 { font-size: var(--text-base); margin-bottom: 2px; }
+    .reports-fit .reports-grid .form-hint { margin: 0 0 var(--space-2); }
+
+    /* Donut: as tall as the card allows after its heading, capped. */
+    .reports-fit .reports-chart-row {
+      flex: 1;
+      min-height: 0;
+      flex-wrap: nowrap;
+      gap: var(--space-4);
+    }
+    .reports-fit .reports-donut {
+      --donut-size: clamp(70px, calc(100cqh - 62px), 150px);
+      width: var(--donut-size);
+      height: var(--donut-size);
+    }
+    .reports-fit .reports-donut-center { inset: 18%; font-size: var(--text-base); }
+    .reports-fit .reports-donut-legend { gap: var(--space-2); }
+
+    /* Summary text + insights stay compact; anything beyond the card is clipped. */
+    .reports-fit .reports-summary-card p { margin: var(--space-1) 0 var(--space-2); font-size: var(--text-sm); }
+    .reports-fit .reports-insights { gap: var(--space-1); }
+    .reports-fit .reports-insights li { padding-bottom: var(--space-1); }
+
+    /* Bar chart fills the rest of its card instead of a fixed 220px. */
+    .reports-fit .reports-bar-chart {
+      flex: 1;
+      height: auto;
+      min-height: 0;
+    }
+
+    /* Detections by date: rows are compact, extra days scroll out of view
+       (no visible scrollbar). */
+    .reports-fit #reports-trend-list {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .reports-fit #reports-trend-list::-webkit-scrollbar { display: none; }
+    .reports-fit .reports-trend-row { padding: var(--space-1) 0; }
+  }
+}
+
+/* --- Print / Save as PDF (the "Print / PDF" button) --- */
+@media print {
+  @page { margin: 14mm; }
+
+  html, body { background: #fff !important; }
+  #sidebar, #header, .reports-toolbar, .toast-container, .modal-overlay { display: none !important; }
+  .app-shell, .app-main { display: block !important; margin: 0 !important; padding: 0 !important; }
+  .app-content { padding: 0 !important; overflow: visible !important; visibility: visible !important; }
+  .app-content > * { animation: none !important; }
+
+  .print-only { display: block; }
+  .print-header { margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #1f2937; }
+  .print-header h1 { font-size: 20px; margin: 0 0 4px; color: #111827; }
+  .print-header p { margin: 0; font-size: 12px; color: #4b5563; }
+
+  .card {
+    background: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d1d5db !important;
+    break-inside: avoid;
+  }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .card { padding: 12px !important; }
+  .stat-card-value { font-size: 20px; }
+  .reports-grid { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .reports-chart-row { flex-wrap: nowrap; gap: 12px; }
+  .reports-donut { width: 110px; height: 110px; }
+  .reports-donut-center { inset: 18px; }
+  .reports-bar-chart { height: 150px; }
+  .reports-toolbar, .reports-export { display: none !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

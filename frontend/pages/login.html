@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login · Uniform Compliance</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/pages/login.css" />
+  <script src="../js/auth.js"></script>
+  <script>
+    // If a demo session is already active, skip the form entirely.
+    // Runs synchronously in <head> so there's no flash of the login form.
+    if (isLoggedIn()) {
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</head>
+
+<body>
+  <main class="login-page">
+    <div class="card login-card">
+      <div class="login-brand">
+        <span class="sidebar-brand-mark"></span>
+        <h1>Uniform Compliance</h1>
+      </div>
+      <p>Sign in to the monitoring dashboard.</p>
+
+      <p id="loginError" class="form-error" hidden></p>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">&#128100;</span>
+            <input type="text" id="username" name="username" autocomplete="username" placeholder="admin" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">&#128274;</span>
+            <input type="password" id="password" name="password" autocomplete="current-password"
+              placeholder="********" />
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">
+              <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg id="eyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94"></path>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 5c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary login-submit">Log In</button>
+      </form>
+
+      <p class="form-hint login-demo-note">
+        Demo build — not real security. Use <strong>admin</strong> /
+        <strong>admin123</strong>.
+      </p>
+    </div>
+  </main>
+
+  <script src="../js/pages/login.js"></script>
+</body>
+
+</html>

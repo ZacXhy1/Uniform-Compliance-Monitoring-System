@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports · Uniform Compliance</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/pages/reports.css" />
+  <script src="../js/auth.js"></script>
+  <script src="../js/settings.js"></script>
+  <script src="../js/config.js"></script>
+  <script>requireAuth();</script>
+  <script src="../js/boot.js"></script>
+  <script src="../js/components/sidebar.js"></script>
+  <script src="../js/components/header.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar"></div>
+    <div class="app-main">
+      <div id="header"></div>
+      <script>renderSidebar('reports'); renderHeader('Reports');</script>
+      <main class="app-content reports-fit">
+
+        <div class="print-only print-header">
+          <h1>Uniform Compliance Report</h1>
+          <p>Consolatrix College of Toledo City Inc. &middot; Main Gate</p>
+          <p>Date range: <span id="print-range"></span> &middot; Generated <span id="print-generated"></span></p>
+        </div>
+
+        <div class="reports-toolbar">
+          <label class="reports-filter-label" for="reports-date-filter">Date range</label>
+          <select id="reports-date-filter" class="select">
+            <option value="all">All Dates</option>
+          </select>
+          <div class="reports-export">
+            <button type="button" class="btn btn-secondary" id="export-print-btn">Print / PDF</button>
+            <button type="button" class="btn btn-primary" id="export-csv-btn">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="reports-stats"></div>
+
+        <div class="reports-grid">
+          <div class="card reports-chart-card">
+            <h2>Compliance Overview</h2>
+            <p class="form-hint" id="reports-overview-subtitle"></p>
+            <div class="reports-chart-row">
+              <div class="reports-donut" id="reports-donut">
+                <div class="reports-donut-center" id="reports-donut-center"></div>
+              </div>
+              <div class="reports-donut-legend" id="reports-donut-legend"></div>
+            </div>
+          </div>
+
+          <div class="card reports-summary-card">
+            <h2>Summary Report</h2>
+            <p id="reports-summary-text"></p>
+            <ul class="reports-insights" id="reports-insights"></ul>
+          </div>
+
+          <div class="card reports-bar-card">
+            <h2>Detections by Status</h2>
+            <p class="form-hint" id="reports-bar-subtitle"></p>
+            <div class="reports-bar-chart" id="reports-bar-chart" role="img" aria-label="Bar chart of detections by status"></div>
+          </div>
+
+          <div class="card reports-trend-card">
+            <h2>Detections by Date</h2>
+            <p class="form-hint">
+              Every detection recorded at the <span id="reports-trend-camera-label"></span> checkpoint,
+              grouped by day — always shows the full session regardless of the date filter above.
+            </p>
+            <div id="reports-trend-list"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/data/mock-data.js"></script>
+  <script src="../js/components/stat-card.js"></script>
+  <script src="../js/components/modal.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/monitoring-engine.js"></script>
+  <script src="../js/live-api.js"></script>
+  <script src="../js/pages/reports.js"></script>
+</body>
+</html>

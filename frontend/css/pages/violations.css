@@ -1,0 +1,225 @@
+/* ==========================================================================
+   Violations — page-specific styles
+   Owner: Dean (Phase 5)
+   Import global.css / components.css first — only add overrides here that
+   are truly specific to this page.
+   ========================================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.violations-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.violations-toolbar .input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.violations-toolbar .select {
+  min-width: 160px;
+}
+
+.violations-count {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3);
+}
+
+#violations-table-wrap {
+  padding: 0;
+  overflow-x: auto;
+  margin-bottom: var(--space-5);
+}
+
+/* Fixed layout keeps the columns (and the centered ones) in the same place
+   on every page, same as the Detections table. */
+.violations-table {
+  table-layout: fixed;
+  min-width: 640px;
+}
+
+.violations-table th,
+.violations-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+#violations-pagination {
+  padding: var(--space-3);
+}
+
+/* Blank padding rows (see renderTable): invisible, and only used in the
+   fit-to-screen layout below. */
+.violations-table .row-filler { display: none; }
+.violations-table .row-filler td { border-bottom-color: transparent; }
+.violations-table tbody tr.row-filler:hover { background: transparent; }
+
+.violations-summary h2 {
+  margin-bottom: var(--space-1);
+}
+
+.violations-by-date-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+}
+
+.violations-by-date-row:last-child {
+  border-bottom: none;
+}
+
+.violations-by-date-label {
+  width: 140px;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.violations-by-date-bar-track {
+  flex: 1;
+  background: var(--color-bg);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.violations-by-date-bar-fill {
+  display: block; /* was an inline <span>, so its width/height were ignored and the bar never showed */
+  height: 100%;
+  background: var(--color-danger);
+  border-radius: 999px;
+}
+
+.violations-by-date-count {
+  width: 32px;
+  text-align: right;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Fit-to-one-screen layout (desktop)
+   On a window at least 1280 x 700 the page is sized to the viewport so the
+   stats, filters, a full 15-row page of the table, its pagination and the
+   by-date summary are all visible without scrolling. The table sits on the
+   left and takes all the height that is left (its 15 rows share it equally);
+   "Violations by Date" moves into a column on the right.
+   Smaller windows use the normal scrolling layout above.
+   ========================================================================== */
+@media screen and (min-width: 1280px) and (min-height: 700px) {
+  .violations-fit {
+    height: calc(100vh - var(--header-height));
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    column-gap: var(--space-4);
+    row-gap: var(--space-2);
+    padding-bottom: var(--space-4);
+  }
+
+  .violations-fit > .stats-grid {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    gap: var(--space-3);
+  }
+  .violations-fit .stats-grid .stat-card { padding: var(--space-3) var(--space-4); }
+  .violations-fit .stat-card-value { font-size: var(--text-lg); }
+
+  .violations-fit > .violations-toolbar { grid-column: 1 / -1; margin-bottom: 0; }
+  .violations-fit > .violations-count { grid-column: 1; grid-row: 3; margin: 0; }
+
+  .violations-fit > #violations-table-wrap {
+    grid-column: 1;
+    grid-row: 4;
+    margin-bottom: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .violations-fit > #violations-table-wrap[hidden] { display: none; }
+  .violations-fit > #violations-empty { grid-column: 1; grid-row: 4; }
+
+  /* The table stretches to fill the card; its rows split the height evenly. */
+  .violations-fit .violations-table {
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+  }
+  .violations-fit .violations-table th,
+  .violations-fit .violations-table td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+  .violations-fit .violations-table th {
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+  }
+  .violations-fit .violations-table .btn-sm {
+    padding: 2px var(--space-3);
+    font-size: var(--text-xs);
+  }
+  .violations-fit .violations-table .row-filler { display: table-row; }
+
+  /* Pagination keeps its space even when there is only one page, so the rows
+     don't change size when a second page appears. */
+  .violations-fit #violations-pagination {
+    flex-shrink: 0;
+    padding: var(--space-2);
+    min-height: 48px;
+  }
+  .violations-fit #violations-pagination[hidden] {
+    display: flex;
+    visibility: hidden;
+  }
+
+  /* Summary card becomes a side column next to the count + table. */
+  .violations-fit > #violations-summary-card {
+    grid-column: 2;
+    grid-row: 3 / 5;
+    margin: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: var(--space-4);
+  }
+  .violations-fit #violations-summary-card .form-hint { margin: 0 0 var(--space-3); }
+  .violations-fit #violations-by-date {
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .violations-fit #violations-by-date::-webkit-scrollbar { display: none; }
+
+  /* Narrow column: date + count on one line, the bar underneath. */
+  .violations-fit .violations-by-date-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-1) var(--space-2);
+  }
+  .violations-fit .violations-by-date-label { width: auto; }
+  .violations-fit .violations-by-date-bar-track { grid-column: 1 / -1; grid-row: 2; }
+  .violations-fit .violations-by-date-count { width: auto; text-align: right; }
+}
+
+@media (max-width: 640px) {
+  .violations-toolbar .select {
+    flex: 1;
+    min-width: 140px;
+  }
+  .violations-by-date-label {
+    width: 96px;
+  }
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Violations · Uniform Compliance</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/pages/violations.css" />
+  <script src="../js/auth.js"></script>
+  <script src="../js/settings.js"></script>
+  <script src="../js/config.js"></script>
+  <script>requireAuth();</script>
+  <script src="../js/boot.js"></script>
+  <script src="../js/components/sidebar.js"></script>
+  <script src="../js/components/header.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar"></div>
+    <div class="app-main">
+      <div id="header"></div>
+      <script>renderSidebar('violations'); renderHeader('Violations');</script>
+      <main class="app-content violations-fit">
+
+        <div class="stats-grid" id="violations-stats"></div>
+
+        <div class="violations-toolbar">
+          <input
+            type="text"
+            id="violations-search"
+            class="input"
+            placeholder="Search by detection ID or student label…"
+          />
+          <select id="violations-date-filter" class="select">
+            <option value="all">All Dates</option>
+          </select>
+          <select id="violations-sort" class="select">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+
+        <p class="violations-count" id="violations-count"></p>
+
+        <div class="card" id="violations-table-wrap">
+          <table class="data-table violations-table">
+            <colgroup>
+              <col style="width: 19%" />
+              <col style="width: 14%" />
+              <col style="width: 25%" />
+              <col style="width: 15%" />
+              <col style="width: 15%" />
+              <col style="width: 12%" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Detected</th>
+                <th class="col-center">Date &amp; Time</th>
+                <th class="col-center">Status</th>
+                <th class="col-center">Confidence</th>
+                <th class="col-center"></th>
+              </tr>
+            </thead>
+            <tbody id="violations-table-body"></tbody>
+          </table>
+          <nav class="pagination" id="violations-pagination" aria-label="Violations pages" hidden></nav>
+        </div>
+
+        <div class="card placeholder-block" id="violations-empty" hidden>
+          No violations match your search or filters. Try adjusting them.
+        </div>
+
+        <div class="card violations-summary" id="violations-summary-card">
+          <h2>Violations by Date</h2>
+          <p class="form-hint">
+            A count of violations recorded on each day in the current session,
+            most recent first.
+          </p>
+          <div id="violations-by-date"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/data/mock-data.js"></script>
+  <script src="../js/components/stat-card.js"></script>
+  <script src="../js/components/modal.js"></script>
+  <script src="../js/components/pagination.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/monitoring-engine.js"></script>
+  <script src="../js/live-api.js"></script>
+  <script src="../js/pages/violations.js"></script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+/* ==========================================================================
+   Global design tokens, resets, and app shell layout
+   Uniform Compliance Monitoring System — do not duplicate these values
+   in page-specific stylesheets. Add new tokens here if you need one.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* --- Color: approved presentation palette (Section 19 of PROJECT_BRIEF.md) --- */
+  --color-primary: #2563EB;        /* Primary Blue */
+  --color-primary-light: #DBEAFE;  /* Light Blue */
+  --color-success: #22C55E;        /* Success Green — Compliant */
+  --color-success-bg: #DCFCE7;     /* Light Green */
+  --color-danger: #EF4444;         /* Danger Red — Violation */
+  --color-danger-bg: #FEE2E2;      /* Light Red */
+  --color-dark: #1F2937;           /* Dark Gray — sidebar, primary text */
+  --color-text-muted: #6B7280;     /* Gray */
+  --color-bg: #F3F4F6;             /* Light Gray — page background */
+  --color-surface: #FFFFFF;        /* White */
+
+  /* --- Minimal necessary extensions ---
+     Not in the official 10-color list, but needed for interactive states
+     (hover/focus shades) and a third "pending" status. Kept within the
+     same Tailwind family as the approved colors (blue-600, green-500,
+     red-500 are Tailwind's exact values) so nothing feels like a foreign
+     visual language bolted on. */
+  --color-primary-hover: #1D4ED8;  /* blue-700 — button/link hover */
+  --color-dark-hover: #374151;     /* gray-700 — sidebar link hover, camera feed gradient */
+  --color-border: #E5E7EB;         /* gray-200 — card/table borders */
+  --color-warning: #F59E0B;        /* amber-500 — "pending" status only */
+  --color-warning-bg: #FEF3C7;     /* amber-100 */
+
+  --color-text: #1F2937;
+  --color-text-inverse: #FFFFFF;
+
+  /* --- Typography --- */
+  --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  /* --- Spacing scale --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* --- Layout --- */
+  --sidebar-width: 240px;
+  --header-height: 52px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(31, 41, 55, 0.06);
+  --shadow-md: 0 4px 16px rgba(31, 41, 55, 0.08);
+
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+}
+
+/* --- Reset --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+p { margin: 0 0 var(--space-3); color: var(--color-text-muted); }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul { list-style: none; margin: 0; padding: 0; }
+
+button, input, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+img { max-width: 100%; display: block; }
+
+/* Visible keyboard focus everywhere — do not remove */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* --- App shell layout ---
+   Every page/*.html should use this markup skeleton:
+   <div class="app-shell">
+     <div id="sidebar"></div>          (filled by js/components/sidebar.js)
+     <div class="app-main">
+       <div id="header"></div>         (filled by js/components/header.js)
+       <main class="app-content"> ... page content ... </main>
+     </div>
+   </div>
+*/
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* prevents flex children from overflowing on narrow content */
+}
+
+.app-content {
+  flex: 1;
+  /* Short top padding: the header already provides breathing room, and the two
+     stacked used to leave a big empty band above every page's content. */
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    padding: var(--space-4);
+  }
+}
+
+/* While js/boot.js is waiting for the page's scripts to fill in its content,
+   keep the content area invisible (but still laid out, so nothing shifts).
+   The sidebar and header stay visible the whole time. */
+html.is-booting .app-content {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-primary-light: rgba(37, 99, 235, 0.18);
+  --color-success-bg: rgba(34, 197, 94, 0.16);
+  --color-danger-bg: rgba(239, 68, 68, 0.18);
+  --color-warning-bg: rgba(245, 158, 11, 0.18);
+
+  --color-dark: #0B1220;
+  --color-dark-hover: #1F2937;
+  --color-border: #303B4C;
+
+  --color-bg: #111827;
+  --color-surface: #1A2332;
+
+  --color-text: #F3F4F6;
+  --color-text-muted: #9CA3AF;
+  --color-text-inverse: #FFFFFF;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* --- Density override (Settings — Phase 7: Compact View) ---
+   Tightens the shared spacing scale that cards, tables, and the app
+   shell all read from, rather than duplicating a compact variant of
+   every component. */
+:root[data-density='compact'] {
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --header-height: 48px;
+}
+
+/* ==========================================================================
+   Dark mode — "Vision UI" skin
+   Applies ONLY when Settings → Dark Mode is on (<html data-theme="dark">).
+   Deep-navy canvas with a blue glow, glassy gradient cards, soft glowing
+   blue accents and rounded corners. Light mode is untouched.
+   Everything is driven by the tokens below, so new pages pick it up
+   automatically.
+   ========================================================================== */
+:root[data-theme='dark'] {
+  color-scheme: dark; /* dark native scrollbars, select menus, date pickers */
+
+  --color-primary: #0075FF;
+  --color-primary-hover: #2B8CFF;
+  --color-primary-light: rgba(0, 117, 255, 0.2);
+  --color-success: #01B574;
+  --color-success-bg: rgba(1, 181, 116, 0.16);
+  --color-danger: #F5474B;
+  --color-danger-bg: rgba(245, 71, 75, 0.16);
+  --color-warning: #FFB547;
+  --color-warning-bg: rgba(255, 181, 71, 0.16);
+
+  --color-bg: #060B28;
+  --color-surface: #0F1535;
+  --color-dark: #0A0F2C;
+  --color-dark-hover: #1A1F37;
+  --color-border: rgba(255, 255, 255, 0.12);
+
+  --color-text: #FFFFFF;
+  --color-text-muted: #A0AEC0;
+
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 20px 27px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Canvas: navy with blue glow --- */
+:root[data-theme='dark'] body {
+  background:
+    radial-gradient(1100px 620px at 88% -8%, rgba(0, 117, 255, 0.38), transparent 62%),
+    radial-gradient(900px 520px at -5% 108%, rgba(33, 212, 253, 0.12), transparent 60%),
+    #060B28;
+  background-attachment: fixed;
+}
+
+/* --- Glass cards --- */
+:root[data-theme='dark'] .card {
+  background: linear-gradient(127deg, rgba(10, 16, 52, 0.94) 19%, rgba(10, 14, 35, 0.55) 77%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 27px rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme='dark'] .stat-card-value {
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+}
+
+/* --- Sidebar: glass panel, icon tiles, glowing active item --- */
+:root[data-theme='dark'] .sidebar {
+  background: linear-gradient(111deg, rgba(6, 11, 40, 0.94) 0%, rgba(10, 14, 35, 0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+:root[data-theme='dark'] .sidebar-brand {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+:root[data-theme='dark'] .sidebar-link {
+  color: #A0AEC0;
+  font-weight: 500;
+  border-radius: 15px;
+}
+:root[data-theme='dark'] .sidebar-link-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  background: #0F1535;
+  color: var(--color-primary);
+}
+:root[data-theme='dark'] .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+:root[data-theme='dark'] .sidebar-link:hover .sidebar-link-icon {
+  color: var(--color-primary);
+}
+:root[data-theme='dark'] .sidebar-link.is-active {
+  background: #1A1F37;
+  color: #FFFFFF;
+  box-shadow: 0 7px 23px rgba(0, 0, 0, 0.35);
+}
+:root[data-theme='dark'] .sidebar-link.is-active .sidebar-link-icon {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(0, 117, 255, 0.6);
+}
+
+/* --- Header: transparent, floats on the canvas --- */
+:root[data-theme='dark'] .header {
+  background: transparent;
+  border-bottom: none;
+}
+:root[data-theme='dark'] .header-user-avatar {
+  background: linear-gradient(135deg, #0075FF, #21D4FD);
+  box-shadow: 0 0 14px rgba(0, 117, 255, 0.5);
+}
+
+/* --- Buttons --- */
+:root[data-theme='dark'] .btn-primary {
+  background: linear-gradient(135deg, #0075FF 0%, #2B8CFF 100%);
+  box-shadow: 0 4px 20px rgba(0, 117, 255, 0.4);
+}
+:root[data-theme='dark'] .btn-primary:hover {
+  background: linear-gradient(135deg, #2B8CFF 0%, #4DA0FF 100%);
+}
+:root[data-theme='dark'] .btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+:root[data-theme='dark'] .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+:root[data-theme='dark'] .pagination-btn.is-active {
+  box-shadow: 0 0 14px rgba(0, 117, 255, 0.5);
+}
+:root[data-theme='dark'] .pagination-btn:hover:not(:disabled):not(.is-active) {
+  background: rgba(255, 255, 255, 0.08);
+}
+:root[data-theme='dark'] .header-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* --- Inputs --- */
+:root[data-theme='dark'] .input,
+:root[data-theme='dark'] .select,
+:root[data-theme='dark'] .form-group input {
+  background: rgba(15, 21, 53, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.2);
+  border-radius: 15px;
+}
+:root[data-theme='dark'] .input:focus,
+:root[data-theme='dark'] .select:focus,
+:root[data-theme='dark'] .form-group input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 117, 255, 0.25);
+}
+:root[data-theme='dark'] ::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+/* --- Tables --- */
+:root[data-theme='dark'] .data-table th {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #A0AEC0;
+}
+:root[data-theme='dark'] .data-table td,
+:root[data-theme='dark'] .data-table th {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+:root[data-theme='dark'] .data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Status pills get a soft glow --- */
+:root[data-theme='dark'] .status-pill--compliant { box-shadow: 0 0 12px rgba(1, 181, 116, 0.25); }
+:root[data-theme='dark'] .status-pill--violation { box-shadow: 0 0 12px rgba(245, 71, 75, 0.25); }
+:root[data-theme='dark'] .status-pill--pending   { box-shadow: 0 0 12px rgba(255, 181, 71, 0.2); }
+
+/* --- Charts / bars --- */
+:root[data-theme='dark'] .dashboard-donut,
+:root[data-theme='dark'] .reports-donut {
+  box-shadow: 0 0 28px rgba(0, 117, 255, 0.28);
+}
+:root[data-theme='dark'] .dashboard-donut-center,
+:root[data-theme='dark'] .reports-donut-center {
+  background: #0B1130;
+}
+:root[data-theme='dark'] .violations-by-date-bar-track,
+:root[data-theme='dark'] .reports-trend-bar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+:root[data-theme='dark'] .violations-by-date-bar-fill {
+  background: linear-gradient(90deg, #F5474B, #FF8A5B);
+}
+
+/* --- Evidence / snapshot placeholder --- */
+:root[data-theme='dark'] .evidence-frame {
+  background: #151B3D;
+  color: #3A4570;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* --- Live camera feed --- */
+:root[data-theme='dark'] .monitoring-feed {
+  background: linear-gradient(160deg, #0A0F2C 0%, #131A4A 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 40px rgba(0, 117, 255, 0.12);
+}
+
+/* --- Modal --- */
+:root[data-theme='dark'] .modal-overlay {
+  background: rgba(3, 6, 22, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+:root[data-theme='dark'] .modal {
+  background: linear-gradient(127deg, #101743 19%, #0A0F2C 77%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* --- Toast --- */
+:root[data-theme='dark'] .toast {
+  background: #0F1535;
+  border: 1px solid rgba(0, 117, 255, 0.45);
+  box-shadow: 0 0 20px rgba(0, 117, 255, 0.25);
+}
+:root[data-theme='dark'] .toast--warning {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+  box-shadow: none;
+}
+
+/* --- Toggle switch --- */
+:root[data-theme='dark'] .toggle-slider {
+  background: rgba(255, 255, 255, 0.18);
+}
+:root[data-theme='dark'] .toggle-slider::before {
+  background: #F3F4F6;
+}
+:root[data-theme='dark'] .toggle-switch input:checked + .toggle-slider {
+  background: var(--color-primary);
+  box-shadow: 0 0 12px rgba(0, 117, 255, 0.55);
+}
+
+/* --- Login page --- */
+:root[data-theme='dark'] .login-page {
+  background-image: linear-gradient(rgba(6, 11, 40, 0.9), rgba(6, 11, 40, 0.6)),
+    url('../assets/images/login-bg.jpg');
+}
+
+/* --- Scrollbars --- */
+:root[data-theme='dark'] ::-webkit-scrollbar { width: 10px; height: 10px; }
+:root[data-theme='dark'] ::-webkit-scrollbar-track { background: transparent; }
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+/* ==========================================================================
+   Light mode — "Vision UI" skin
+   Same design language as the dark skin above (glass cards, rounded
+   corners, icon-tile sidebar, glowing blue accents) on a pale-blue canvas.
+   Applies whenever Dark Mode is OFF. The dark skin is untouched.
+   ========================================================================== */
+:root:not([data-theme='dark']) {
+  --color-primary: #0075FF;
+  --color-primary-hover: #2B8CFF;
+  --color-primary-light: #DBEAFE;
+  --color-success: #01B574;
+  --color-success-bg: #D9F6EA;
+  --color-danger-bg: #FDE2E3;
+
+  --color-bg: #EEF3FF;
+  --color-surface: #FFFFFF;
+  --color-dark: #0F1747;
+  --color-dark-hover: #1A2358;
+  --color-border: rgba(15, 23, 42, 0.08);
+
+  --color-text: #1B2559;
+  --color-text-muted: #64748B;
+
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 6px rgba(30, 64, 175, 0.10);
+  --shadow-md: 0 20px 27px rgba(30, 64, 175, 0.12);
+}
+
+/* --- Canvas: pale blue with soft glows --- */
+:root:not([data-theme='dark']) body {
+  background:
+    radial-gradient(1100px 620px at 88% -8%, rgba(0, 117, 255, 0.20), transparent 62%),
+    radial-gradient(900px 520px at -5% 108%, rgba(33, 212, 253, 0.18), transparent 60%),
+    #EEF3FF;
+  background-attachment: fixed;
+}
+
+/* --- Frosted glass cards --- */
+:root:not([data-theme='dark']) .card {
+  background: linear-gradient(127deg, rgba(255, 255, 255, 0.94) 19%, rgba(255, 255, 255, 0.66) 77%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 27px rgba(30, 64, 175, 0.08);
+}
+
+/* --- Sidebar: frosted white panel, icon tiles, glowing active item --- */
+:root:not([data-theme='dark']) .sidebar {
+  background: linear-gradient(111deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.62) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--color-text);
+  border-right: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 0 40px rgba(30, 64, 175, 0.06);
+}
+:root:not([data-theme='dark']) .sidebar-brand {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+:root:not([data-theme='dark']) .sidebar-brand-text span { color: var(--color-text-muted); }
+:root:not([data-theme='dark']) .sidebar-link {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  border-radius: 15px;
+}
+:root:not([data-theme='dark']) .sidebar-link-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  background: #E8F0FF;
+  color: var(--color-primary);
+}
+:root:not([data-theme='dark']) .sidebar-link:hover {
+  background: rgba(0, 117, 255, 0.07);
+  color: var(--color-text);
+}
+:root:not([data-theme='dark']) .sidebar-link:hover .sidebar-link-icon { color: var(--color-primary); }
+:root:not([data-theme='dark']) .sidebar-link.is-active {
+  background: #FFFFFF;
+  color: var(--color-text);
+  box-shadow: 0 7px 23px rgba(30, 64, 175, 0.14);
+}
+:root:not([data-theme='dark']) .sidebar-link.is-active .sidebar-link-icon {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(0, 117, 255, 0.45);
+}
+:root:not([data-theme='dark']) .sidebar-footer { color: #94A3B8; }
+
+/* --- Header: transparent, floats on the canvas --- */
+:root:not([data-theme='dark']) .header {
+  background: transparent;
+  border-bottom: none;
+}
+:root:not([data-theme='dark']) .header-user-avatar {
+  background: linear-gradient(135deg, #0075FF, #21D4FD);
+  box-shadow: 0 0 14px rgba(0, 117, 255, 0.4);
+}
+:root:not([data-theme='dark']) .header-logout:hover { background: rgba(0, 117, 255, 0.08); }
+
+/* --- Buttons --- */
+:root:not([data-theme='dark']) .btn-primary {
+  background: linear-gradient(135deg, #0075FF 0%, #2B8CFF 100%);
+  box-shadow: 0 4px 20px rgba(0, 117, 255, 0.35);
+}
+:root:not([data-theme='dark']) .btn-primary:hover {
+  background: linear-gradient(135deg, #2B8CFF 0%, #4DA0FF 100%);
+}
+:root:not([data-theme='dark']) .btn-secondary {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+:root:not([data-theme='dark']) .btn-secondary:hover { background: #FFFFFF; }
+:root:not([data-theme='dark']) .pagination-btn.is-active { box-shadow: 0 0 14px rgba(0, 117, 255, 0.4); }
+:root:not([data-theme='dark']) .pagination-btn:hover:not(:disabled):not(.is-active) { background: #E8F0FF; }
+
+/* --- Inputs --- */
+:root:not([data-theme='dark']) .input,
+:root:not([data-theme='dark']) .select,
+:root:not([data-theme='dark']) .form-group input {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 15px;
+}
+:root:not([data-theme='dark']) .input:focus,
+:root:not([data-theme='dark']) .select:focus,
+:root:not([data-theme='dark']) .form-group input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 117, 255, 0.15);
+}
+
+/* --- Tables --- */
+:root:not([data-theme='dark']) .data-table th {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+:root:not([data-theme='dark']) .data-table tbody tr:hover { background: rgba(0, 117, 255, 0.04); }
+
+/* --- Status pills (deeper text for contrast on the light tints) --- */
+:root:not([data-theme='dark']) .status-pill--compliant { color: #047857; }
+:root:not([data-theme='dark']) .status-pill--violation { color: #DC2626; }
+:root:not([data-theme='dark']) .status-pill--pending   { color: #B45309; }
+
+/* --- Charts / bars --- */
+:root:not([data-theme='dark']) .dashboard-donut,
+:root:not([data-theme='dark']) .reports-donut { box-shadow: 0 0 28px rgba(0, 117, 255, 0.18); }
+:root:not([data-theme='dark']) .violations-by-date-bar-track,
+:root:not([data-theme='dark']) .reports-trend-bar-track { background: #E2E8F5; }
+:root:not([data-theme='dark']) .violations-by-date-bar-fill {
+  background: linear-gradient(90deg, #EF4444, #FF8A5B);
+}
+
+/* --- Evidence / snapshot placeholder --- */
+:root:not([data-theme='dark']) .evidence-frame {
+  background: #E4ECFB;
+  color: #A8B8DA;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+/* --- Live camera feed (stays dark, like a real camera view) --- */
+:root:not([data-theme='dark']) .monitoring-feed {
+  background: linear-gradient(160deg, #0A0F2C 0%, #131A4A 100%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 24px rgba(30, 64, 175, 0.18);
+}
+
+/* --- Modal --- */
+:root:not([data-theme='dark']) .modal-overlay {
+  background: rgba(15, 23, 71, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+:root:not([data-theme='dark']) .modal {
+  background: linear-gradient(127deg, #FFFFFF 19%, #F3F7FF 77%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+/* --- Toast --- */
+:root:not([data-theme='dark']) .toast {
+  border: 1px solid rgba(0, 117, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(15, 23, 71, 0.25);
+}
+:root:not([data-theme='dark']) .toast--warning { border-color: var(--color-warning); }
+
+/* --- Toggle switch --- */
+:root:not([data-theme='dark']) .toggle-slider { background: rgba(15, 23, 42, 0.16); }
+:root:not([data-theme='dark']) .toggle-slider::before { background: #FFFFFF; }
+:root:not([data-theme='dark']) .toggle-switch input:checked + .toggle-slider {
+  background: var(--color-primary);
+  box-shadow: 0 0 12px rgba(0, 117, 255, 0.4);
+}
+
+/* --- Login page --- */
+:root:not([data-theme='dark']) .login-page {
+  background-image: linear-gradient(rgba(238, 243, 255, 0.85), rgba(238, 243, 255, 0.5)),
+    url('../assets/images/login-bg.jpg');
+}
+
+/* --- Scrollbars --- */
+:root:not([data-theme='dark']) ::-webkit-scrollbar { width: 10px; height: 10px; }
+:root:not([data-theme='dark']) ::-webkit-scrollbar-track { background: transparent; }
+:root:not([data-theme='dark']) ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+  border-radius: 999px;
+}

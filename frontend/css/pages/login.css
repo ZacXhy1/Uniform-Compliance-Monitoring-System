@@ -1,0 +1,103 @@
+/* ==========================================================================
+   Login — page-specific styles
+   Owner: Earl (Phase 1)
+   Import global.css / components.css first — only add overrides here that
+   are truly specific to this page. No sidebar/header shell on this page.
+   ========================================================================== */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)),
+    url('../../assets/images/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.login-brand h1 {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.login-demo-note {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+}
+
+/* --- Input icons (username / password) --- */
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-wrap input {
+  width: 100%;
+  padding-left: calc(var(--space-3) * 2 + 14px);
+}
+
+.input-icon {
+  position: absolute;
+  left: var(--space-3);
+  font-size: var(--text-sm);
+  opacity: 0.5;
+  filter: grayscale(100%);
+  pointer-events: none;
+}
+
+/* --- Show/hide password toggle (hidden until something is typed) --- */
+.password-toggle {
+  position: absolute;
+  right: var(--space-3);
+  display: none;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.password-toggle.is-visible {
+  display: flex;
+}
+
+.password-toggle:hover {
+  color: var(--color-text);
+}
+
+.password-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+#password {
+  padding-right: calc(var(--space-3) * 2 + 18px);
+}
+
+/* Hide the browser's built-in reveal icon so only ours shows */
+#password::-ms-reveal,
+#password::-ms-clear {
+  display: none;
+}

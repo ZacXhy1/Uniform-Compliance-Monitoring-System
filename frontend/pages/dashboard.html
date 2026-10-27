@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · Uniform Compliance</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/pages/dashboard.css" />
+  <script src="../js/auth.js"></script>
+  <script src="../js/settings.js"></script>
+  <script src="../js/config.js"></script>
+  <script>requireAuth();</script>
+  <script src="../js/boot.js"></script>
+  <script src="../js/components/sidebar.js"></script>
+  <script src="../js/components/header.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar"></div>
+    <div class="app-main">
+      <div id="header"></div>
+      <script>renderSidebar('dashboard'); renderHeader('Dashboard');</script>
+      <main class="app-content dashboard-fit">
+
+        <div class="card dashboard-monitoring-banner">
+          <span class="dashboard-monitoring-dot" id="dashboard-monitoring-dot"></span>
+          <span id="dashboard-monitoring-text">Checking monitoring status&hellip;</span>
+          <a class="btn btn-secondary btn-sm dashboard-monitoring-link" href="monitoring.html">
+            Live Monitoring &rarr;
+          </a>
+        </div>
+
+        <!-- Hero row: decorative looping hologram video (left) with the four KPI
+             cards stacked in one column on its right. -->
+        <section class="dashboard-hero">
+          <!-- Decorative only: no controls, muted, auto-resumes if anything pauses it
+               (see initHeroVideo() in js/pages/dashboard.js). -->
+          <div class="card dashboard-hero-video" id="dashboard-hero-frame" aria-hidden="true">
+            <video
+              id="dashboard-hero-video"
+              class="dashboard-hero-video-el"
+              src="../assets/video/uniform-hologram.mp4"
+              poster="../assets/images/uniform-hologram-poster.jpg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+              disablepictureinpicture
+              disableremoteplayback
+              tabindex="-1"
+            ></video>
+          </div>
+
+          <div class="dashboard-summary-cards" id="dashboard-summary-cards"></div>
+        </section>
+
+        <!-- Bottom row: compliance donut | bar chart placeholder | recent activity.
+             On desktop the whole dashboard is sized to fit one screen (see the
+             "fit" block in css/pages/dashboard.css). -->
+        <div class="dashboard-grid">
+          <div class="card dashboard-chart-card">
+            <h2>Compliance Overview</h2>
+            <div class="dashboard-chart-row">
+              <div class="dashboard-donut" id="dashboard-donut">
+                <div class="dashboard-donut-center" id="dashboard-donut-center"></div>
+              </div>
+              <div class="dashboard-donut-legend" id="dashboard-donut-legend"></div>
+            </div>
+          </div>
+
+          <div class="card dashboard-bar-card">
+            <h2>Detections by Status</h2>
+            <div class="bar-chart" id="dashboard-bar-chart" role="img" aria-label="Bar chart of detections by status"></div>
+          </div>
+
+          <div class="card dashboard-activity-card">
+            <div class="dashboard-activity-header">
+              <h2>Recent Activity</h2>
+              <a href="detections.html">View all &rarr;</a>
+            </div>
+            <div id="dashboard-activity-table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Detected</th>
+                    <th class="col-center">Time</th>
+                    <th class="col-center">Status</th>
+                    <th class="col-center">Confidence</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/data/mock-data.js"></script>
+  <script src="../js/components/stat-card.js"></script>
+  <script src="../js/components/modal.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/monitoring-engine.js"></script>
+  <script src="../js/live-api.js"></script>
+  <script src="../js/pages/dashboard.js"></script>
+</body>
+</html>

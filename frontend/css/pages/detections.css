@@ -1,0 +1,98 @@
+/* ==========================================================================
+   Detections — page-specific styles
+   Owner: Zachary (Phase 4)
+   Import global.css / components.css first — only add overrides here that
+   are truly specific to this page.
+   ========================================================================== */
+
+.detections-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.detections-toolbar .input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.detections-toolbar .select {
+  min-width: 160px;
+}
+
+.detections-count {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3);
+}
+
+#detections-table-wrap {
+  padding: 0;
+  overflow: hidden; /* no inner scrollbars */
+}
+
+/* Fixed layout + fixed row height = the table never resizes between pages.
+   Row height scales with the window so all 15 rows + pagination fit in the
+   base view without a page scrollbar (min 34px, max 64px). */
+.detections-table {
+  table-layout: fixed;
+  /* Rows grow to fill whatever height is left under the toolbar (16 = 15 rows
+     + header row). 241px = everything else on the page without the banner. */
+  --det-chrome: 241px;
+  --det-row-h: clamp(34px, calc((100vh - var(--det-chrome)) / 16), 64px);
+}
+
+/* The "needs review" banner takes ~64px when visible. */
+.app-content:has(#review-banner:not([hidden])) .detections-table {
+  --det-chrome: 305px;
+}
+
+.detections-table th,
+.detections-table td {
+  height: var(--det-row-h);
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detections-table .col-center { text-align: center; }
+
+.detections-table .row-filler td { border-bottom-color: transparent; }
+.detections-table tbody tr.row-filler:hover { background: transparent; }
+
+#detections-pagination {
+  padding: var(--space-3);
+  min-height: 52px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .detections-toolbar .select {
+    flex: 1;
+    min-width: 140px;
+  }
+}
+
+/* Banner shown when detections are waiting for manual review */
+.review-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.review-banner[hidden] { display: none; }
+
+/* .review-actions / .review-note moved to components.css (shared with Violations). */

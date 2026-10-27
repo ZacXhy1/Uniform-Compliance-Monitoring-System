@@ -19,13 +19,18 @@ import threading
 import time
 import urllib.request
 from contextlib import asynccontextmanager
+from typing import Optional
 
 import cv2
+import numpy as np
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from ultralytics import YOLO
+from fastapi import HTTPException, Request
+from fastapi.responses import FileResponse
 
 load_dotenv()
 
@@ -65,6 +70,17 @@ def decide(votes):
     return "NO RESULT - RETRY"
 
 
+def result_confidence(votes, result):
+    """Average confidence (0 to 1) of the frames that produced the result."""
+    if result == "COMPLIANT":
+        picked = [p for c, p in votes if c == 1 and p >= POLO_CONF]
+    elif result == "NON-COMPLIANT":
+        picked = [p for c, p in votes if c == 0]
+    else:
+        picked = []   # retry: nothing clear was detected
+    return round(sum(picked) / len(picked), 3) if picked else None
+
+
 # ---------- optional integrations ----------
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
@@ -80,13 +96,21 @@ def save_to_supabase(entry):
         return
     try:
         supabase.table(SUPABASE_TABLE).insert({
-            "created_at": entry["time"],
             "result": entry["result"],
             "snapshot": entry["snapshot"],
             "capture_to_result_s": entry["seconds"],
+            "confidence": entry.get("confidence"),
+            "student_id": entry.get("student_id"),
         }).execute()
     except Exception as e:
         print("Supabase insert failed:", e)
+
+
+def find_student(uid):
+    """Look up an RFID UID in the students table. Returns a dict or None."""
+    rows = (supabase.table("students").select("id,name,section")
+            .eq("rfid_uid", uid).limit(1).execute().data)
+    return rows[0] if rows else None
 
 
 def notify_esp32(result):
@@ -110,6 +134,8 @@ class State:
         self.t_start = 0.0
         self.cooldown_until = 0.0
         self.last_result = None
+        self.student = None         # student for the check in progress (None = dashboard test)
+        self.done = threading.Event()   # set when a check finishes (lets /trigger?wait=true reply)
         self.camera_ok = False
         self.logs = []
         self.clients = set()
@@ -156,6 +182,9 @@ def finish_check(frame):
         "compliant": result == "COMPLIANT",
         "snapshot": fname,
         "seconds": seconds,
+        "confidence": result_confidence(S.votes, result),
+        "student": S.student["name"] if S.student else None,
+        "student_id": S.student["id"] if S.student else None,
     }
     S.last_result = entry
     S.logs.insert(0, entry)
@@ -164,6 +193,7 @@ def finish_check(frame):
         f.write(json.dumps(entry) + "\n")
     print(result, S.votes)
     broadcast({"type": "result", **entry})
+    S.done.set()
     S.cooldown_until = time.time() + COOLDOWN_S
     set_mode("cooldown")
     # slow I/O off the camera thread so the stream does not freeze
@@ -173,14 +203,23 @@ def finish_check(frame):
 
 def camera_loop():
     cap = cv2.VideoCapture(CAM_INDEX)
+    print(f"Opening camera index {CAM_INDEX}: {'opened' if cap.isOpened() else 'FAILED to open'}")
+    fails = 0
     while not S.stop:
         ok, frame = cap.read()
         if not ok:
             S.camera_ok = False
+            fails += 1
+            if fails in (1, 10) or fails % 60 == 0:   # keep the console readable
+                print(f"Camera: no frame (attempt {fails}). Is another program using the webcam, "
+                      f"or is CAM_INDEX={CAM_INDEX} the wrong camera?")
             time.sleep(0.5)
             cap.release()
             cap = cv2.VideoCapture(CAM_INDEX)   # try to reconnect
             continue
+        fails = 0
+        if not S.camera_ok:
+            print("Camera ready")
         S.camera_ok = True
         r = model.predict(frame, conf=CONF, verbose=False)[0]
         view = r.plot()
@@ -206,6 +245,7 @@ def camera_loop():
 async def lifespan(app):
     global model
     model = YOLO(MODEL_PATH)
+    model.predict(np.zeros((480, 640, 3), dtype=np.uint8), verbose=False)  # warm-up: first real check is faster
     S.loop = asyncio.get_running_loop()
     if LOG_FILE.exists():   # reload recent history after a restart
         lines = LOG_FILE.read_text(encoding="utf-8").splitlines()[-200:]
@@ -218,23 +258,51 @@ async def lifespan(app):
 
 app = FastAPI(title="Uniform Compliance API", lifespan=lifespan)
 
-# Allow your separately-hosted dashboard to call the API. Tighten for real deployment.
-from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+class TriggerIn(BaseModel):
+    uid: Optional[str] = None   # RFID UID from the ESP32; omit for the dashboard button
 
 
 @app.post("/trigger")
-def trigger():
-    """Start one check. Later, the RFID tap handler calls this same function."""
+def trigger(body: Optional[TriggerIn] = None, wait: bool = False):
+    """Start one check. Dashboard button: no body. ESP32 RFID tap: {"uid": "..."}.
+    With ?wait=true the reply is held until the result is ready (~1-2 s), so the
+    ESP32 can drive its LEDs/buzzer straight from the response."""
+    student = None
+    uid = body.uid.strip().upper() if body and body.uid else None
+    if uid:
+        if not supabase:
+            return JSONResponse({"ok": False, "status": "error",
+                                 "error": "students database not configured"}, status_code=503)
+        try:
+            student = find_student(uid)
+        except Exception as e:
+            print("student lookup failed:", e)
+            return JSONResponse({"ok": False, "status": "error",
+                                 "error": "student lookup failed"}, status_code=503)
+        if not student:
+            broadcast({"type": "unregistered", "uid": uid})
+            return JSONResponse({"ok": False, "status": "unregistered"}, status_code=404)
+
     with S.lock:
         if S.mode != "idle":
-            return JSONResponse({"ok": False, "state": S.mode}, status_code=409)
+            return JSONResponse({"ok": False, "status": "busy", "state": S.mode}, status_code=409)
         if not S.camera_ok:
-            return JSONResponse({"ok": False, "error": "camera not available"}, status_code=503)
+            return JSONResponse({"ok": False, "status": "error", "error": "camera not available"},
+                                status_code=503)
         S.votes = []
+        S.student = student
+        S.done.clear()
         S.t_start = time.time()
         set_mode("collecting")
-    return {"ok": True, "state": "collecting"}
+
+    if not wait:
+        return {"ok": True, "state": "collecting"}
+    if not S.done.wait(timeout=10):          # lock is released, camera thread keeps running
+        return JSONResponse({"ok": False, "status": "timeout"}, status_code=504)
+    e = S.last_result
+    status = {"COMPLIANT": "compliant", "NON-COMPLIANT": "noncompliant"}.get(e["result"], "retry")
+    return {"ok": True, "status": status, "student": e["student"], "seconds": e["seconds"]}
 
 
 @app.get("/api/status")
@@ -272,7 +340,16 @@ async def ws(websocket: WebSocket):
         S.clients.discard(websocket)
 
 
-app.mount("/captures", StaticFiles(directory="captures"), name="captures")
+@app.get("/captures/{name}")
+def get_capture(name: str, request: Request):
+    # Only the laptop running the server may view snapshots.
+    if request.client.host not in ("127.0.0.1", "::1"):
+        raise HTTPException(status_code=403)
+    path = (CAPTURES / name).resolve()
+    if path.suffix.lower() != ".jpg" or CAPTURES.resolve() not in path.parents or not path.is_file():
+        raise HTTPException(status_code=404)
+    return FileResponse(path)
+
 # Serves the dashboard at http://localhost:8000/ once frontend/index.html exists
 if pathlib.Path("frontend/index.html").exists():
     app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

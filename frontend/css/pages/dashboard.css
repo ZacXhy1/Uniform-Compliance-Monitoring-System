@@ -1,0 +1,485 @@
+/* ==========================================================================
+   Dashboard — page-specific styles
+   Owner: Paul (Phase 2)
+   Import global.css / components.css first — only add overrides here that
+   are truly specific to this page.
+   ========================================================================== */
+
+/* --- Monitoring status banner (slim, full width, above the hero row) --- */
+.dashboard-monitoring-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* --- Hero row: looping hologram video (left) + KPI column (right) ---
+   The video is purely decorative. It's a 16:9 card and the KPI column
+   stretches to match its height, so the four cards divide that height evenly
+   and the whole row stays above the fold. */
+.dashboard-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.dashboard-hero-video {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  background: #050816; /* matches the video's own dark scene, in light and dark themes */
+  aspect-ratio: 16 / 9;
+  /* Never taller than the visible area under the header and status banner, so
+     it can't be pushed below the fold on short/wide windows. */
+  max-height: calc(100vh - var(--header-height) - var(--space-6) * 2 - 4.5rem);
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-hero-video-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Clicks / taps do nothing: no pause, no seeking. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Soft edge + bottom vignette so the clip blends into the card chrome. */
+.dashboard-hero-video::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 -48px 64px -32px rgba(5, 8, 22, 0.55);
+}
+
+.dashboard-monitoring-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Reuses the pulse-ring keyframes already defined in components.css
+   (sidebar brand mark uses the same trick) — same visual language as the
+   "LIVE" indicator on the Monitoring page. */
+.dashboard-monitoring-dot.is-live {
+  background: var(--color-success);
+  position: relative;
+}
+
+.dashboard-monitoring-dot.is-live::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-success);
+  animation: pulse-ring 2.2s ease-out infinite;
+}
+
+.dashboard-monitoring-link {
+  margin-left: auto;
+}
+
+/* --- KPI cards: one vertical column beside the video ---
+   Each card is a compact row (label left, value right) with a small accent bar
+   in its tone color. Scoped to the dashboard on purpose: .stat-card is shared
+   with Reports and Violations, which keep their full-size cards. */
+.dashboard-summary-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.dashboard-summary-cards .stat-card {
+  position: relative;
+  flex: 1;
+  flex-direction: row-reverse; /* markup is value-then-label; show label first */
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+}
+
+.dashboard-summary-cards .stat-card-value {
+  font-size: var(--text-xl);
+}
+
+.dashboard-summary-cards .stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.dashboard-summary-cards .stat-card:has(.stat-card-value--success)::before { background: var(--color-success); opacity: 1; }
+.dashboard-summary-cards .stat-card:has(.stat-card-value--danger)::before { background: var(--color-danger); opacity: 1; }
+.dashboard-summary-cards .stat-card:has(.stat-card-value--primary)::before { background: var(--color-primary); opacity: 1; }
+
+/* Dark "Vision UI" skin: the glass blur on .card would be recomputed on every
+   video frame (and is invisible behind an opaque video anyway), so turn it off
+   for this card and give it the same blue glow the donut gets. */
+:root[data-theme='dark'] .dashboard-hero-video {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #050816;
+  box-shadow: 0 0 36px rgba(0, 117, 255, 0.22);
+}
+
+/* --- Bottom row: compliance donut | bar chart placeholder | recent activity ---
+   minmax(0, ...) so a wide table scrolls inside its own wrapper instead of
+   stretching the track (and the whole page) sideways. */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 2.2fr);
+  align-items: stretch;
+  gap: var(--space-5);
+}
+
+/* Detections-by-status bar chart card. The chart fills whatever height the
+   card has left under the title (works in the fit-to-screen layout too). */
+.dashboard-bar-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.dashboard-bar-card .bar-chart {
+  flex: 1;
+  min-height: 0;
+}
+
+/* --- Bar chart (shared markup with Reports; plain CSS, no library) --- */
+.bar-chart {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: var(--space-3);
+}
+
+.bar-chart-col {
+  flex: 1;
+  min-width: 0;
+  max-width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.bar-chart-track {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bar-chart-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bar-chart-bar--success { background: var(--color-success); }
+.bar-chart-bar--danger { background: var(--color-danger); }
+.bar-chart-bar--warning { background: var(--color-warning); }
+
+.bar-chart-value {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.bar-chart-label {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* --- Compliance donut chart ---
+   Built with a CSS conic-gradient, not a charting library, per
+   PROJECT_BRIEF.md Section 25 ("avoid unnecessary libraries"). The colors
+   are set inline by dashboard.js since they depend on live data. */
+.dashboard-chart-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.dashboard-donut {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-donut-center {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.dashboard-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 140px;
+}
+
+.dashboard-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dashboard-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-legend-dot--success { background: var(--color-success); }
+.dashboard-legend-dot--danger { background: var(--color-danger); }
+.dashboard-legend-dot--warning { background: var(--color-warning); }
+
+.dashboard-legend-count {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+/* --- Recent activity card --- */
+.dashboard-activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.dashboard-activity-header h2 {
+  margin: 0;
+}
+
+.dashboard-activity-header a {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+#dashboard-activity-table-wrap {
+  overflow-x: auto;
+}
+
+/* Keep timestamps / status pills on one line so rows stay a uniform height. */
+.dashboard-activity-card .data-table th,
+.dashboard-activity-card .data-table td {
+  padding: var(--space-2) var(--space-2);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* The script renders up to 8 recent rows. Outside the fit-to-screen layout
+   (small / narrow windows, where the page just scrolls) show the usual 5. */
+#dashboard-recent-body tr:nth-child(n + 6) {
+  display: none;
+}
+
+/* Not enough width for video + KPI column: stack them (video first so it's
+   still the first thing on screen) and lay the KPIs out 2x2. */
+@media (max-width: 1100px) {
+  .dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Below this width three side-by-side cards are too cramped for the activity
+   table, so stack them. */
+@media (max-width: 1349px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  /* Narrow cards: stack value over label instead of side by side. */
+  .dashboard-summary-cards .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--space-3) var(--space-4);
+  }
+
+}
+
+@media (max-width: 480px) {
+  .dashboard-monitoring-banner {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-monitoring-link {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Fit-to-one-screen layout (desktop)
+   On a window at least 1280 x 600, the whole dashboard is sized to the
+   viewport so every summary is visible without scrolling: the status banner,
+   then the video + KPI row, then the donut / placeholder / activity row.
+   Row heights come from the window height (not the content), the video keeps
+   its 16:9 shape by deriving its width from the row height (container query
+   units), and Recent Activity shows as many rows as its card has room for.
+   Smaller windows fall back to the normal scrolling layout above.
+   ========================================================================== */
+@supports (container-type: size) {
+  @media (min-width: 1280px) and (min-height: 600px) {
+    .dashboard-fit {
+      height: calc(100vh - var(--header-height));
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: var(--space-3);
+      padding-bottom: var(--space-5);
+    }
+
+    .dashboard-fit > .dashboard-monitoring-banner {
+      margin-bottom: 0;
+      padding: var(--space-2) var(--space-4);
+    }
+
+    /* --- Row 1: video + KPI column --- */
+    .dashboard-fit > .dashboard-hero {
+      container-type: size;
+      min-height: 0;
+      margin-bottom: 0;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-content: start;
+      gap: var(--space-4);
+    }
+
+    /* Height = the row's height; width follows from 16:9 (capped so the KPI
+       column always keeps room on tall, narrow windows). */
+    .dashboard-fit .dashboard-hero-video {
+      width: min(calc(100cqh * 16 / 9), 62cqw);
+      max-height: none;
+    }
+
+    .dashboard-fit .dashboard-summary-cards {
+      gap: var(--space-2);
+    }
+
+    .dashboard-fit .dashboard-summary-cards .stat-card {
+      padding: 0 var(--space-5);
+    }
+
+    /* --- Row 2: donut | placeholder | recent activity --- */
+    .dashboard-fit > .dashboard-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 2.2fr);
+      min-height: 0;
+      gap: var(--space-3);
+    }
+
+    .dashboard-fit .dashboard-grid > .card {
+      min-height: 0;
+      padding: var(--space-4);
+      overflow: hidden;
+    }
+
+    .dashboard-fit .dashboard-grid h2 {
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-2);
+    }
+
+    /* Donut scales with its card's height; legend sits under it. */
+    .dashboard-fit .dashboard-chart-card {
+      container-type: size;
+    }
+
+    .dashboard-fit .dashboard-chart-row {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: var(--space-3);
+      height: calc(100% - 2rem);
+    }
+
+    /* Whatever height is left after the title, the legend and the gaps. */
+    .dashboard-fit .dashboard-donut {
+      width: min(clamp(64px, calc(100cqh - 140px), 200px), 70cqw);
+      height: min(clamp(64px, calc(100cqh - 140px), 200px), 70cqw);
+    }
+
+    .dashboard-fit .dashboard-donut-center {
+      inset: 16%;
+      font-size: clamp(0.9rem, 6cqh, 1.5rem);
+    }
+
+    .dashboard-fit .dashboard-donut-legend {
+      flex: none;
+      gap: var(--space-2);
+      width: min(100%, 220px);
+      min-width: 0;
+    }
+
+    /* Recent Activity: show only the rows that fit. The card is a size
+       container, so rows reveal themselves as its height allows. */
+    .dashboard-fit .dashboard-activity-card {
+      container: dash-activity / size;
+    }
+
+    .dashboard-fit .dashboard-activity-header {
+      margin-bottom: var(--space-2);
+    }
+
+    .dashboard-fit .dashboard-activity-header h2 {
+      margin-bottom: 0;
+    }
+
+    .dashboard-fit #dashboard-recent-body tr:nth-child(n + 4) {
+      display: none;
+    }
+
+    @container dash-activity (min-height: 215px) { .dashboard-fit #dashboard-recent-body tr:nth-child(4) { display: table-row; } }
+    @container dash-activity (min-height: 250px) { .dashboard-fit #dashboard-recent-body tr:nth-child(5) { display: table-row; } }
+    @container dash-activity (min-height: 285px) { .dashboard-fit #dashboard-recent-body tr:nth-child(6) { display: table-row; } }
+    @container dash-activity (min-height: 320px) { .dashboard-fit #dashboard-recent-body tr:nth-child(7) { display: table-row; } }
+    @container dash-activity (min-height: 355px) { .dashboard-fit #dashboard-recent-body tr:nth-child(8) { display: table-row; } }
+  }
+}
